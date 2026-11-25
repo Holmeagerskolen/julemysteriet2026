@@ -71,6 +71,13 @@ async function load() {
     points.textContent = (puzzle?.points ?? defaultPuzzlePoints(number)) + ' POINT';
     card.append(points);
 
+    if (number === dates.length) {
+      const deadline = document.createElement('p');
+      deadline.className = 'puzzle-deadline';
+      deadline.innerHTML = 'Svar senest <strong>31. december 2026</strong>.';
+      card.append(deadline);
+    }
+
     if (puzzle) {
       if (hasOpened && puzzle.puzzle_path) {
         card.append(imageDownload(puzzle.puzzle_path, 'gaade-' + number + '.png', 'Download gåden'));

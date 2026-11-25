@@ -44,3 +44,6 @@ form[aria-busy="true"] button:disabled { cursor: progress; }
 
 .team-save-result { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
 .team-save-result .form-feedback { font-weight: 700; }
+
+.puzzle-deadline, .winner-note { margin: .9rem 0 0; font-size: .875rem; line-height: 1.5; }
+.puzzle-deadline strong, .winner-note strong { color: var(--red); }
