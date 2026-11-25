@@ -25,7 +25,7 @@ function fill() {
  form.elements.bonus_answer.value = n === 2 ? (p?.bonus_answer ?? []).join('\n') : '';
  form.elements.puzzle.value = ''; form.elements.solution.value = '';
 }
-async function showEntries({id, rpc, empty, label, action, confirm, remove, argument, refresh}, message = '') {
+async function showEntries({id, rpc, empty, label, action, confirm, remove, argument, refresh, details}, message = '') {
  const list = document.querySelector('#admin-' + id);
  const feedback = document.querySelector('#admin-' + id + '-status');
  const {data, error} = await client.rpc(rpc);
@@ -56,11 +56,51 @@ async function showEntries({id, rpc, empty, label, action, confirm, remove, argu
    }
   });
   item.append(button);
+  if (details) item.append(details(entry));
   list.append(item);
  }
 }
 
+function teamMembers(team) {
+ const details = document.createElement('details');
+ const summary = document.createElement('summary');
+ summary.textContent = 'Se holdmedlemmer';
+ summary.setAttribute('aria-label', 'Se holdmedlemmer for ' + displayTeamName(team.name));
+ const content = document.createElement('div');
+ details.append(summary, content);
+ let loading = false;
+ details.addEventListener('toggle', async () => {
+  if (!details.open || loading) return;
+  loading = true;
+  content.textContent = 'Henter holdmedlemmer…';
+  try {
+   const {data, error} = await client.rpc('admin_team_members', {team_id: team.id});
+   if (error) throw error;
+   content.replaceChildren();
+   if (!data) {
+    content.textContent = 'Holdet findes ikke længere.';
+   } else if (data.length === 0) {
+    content.textContent = 'Der er ingen holdmedlemmer på listen.';
+   } else {
+    const list = document.createElement('ul');
+    data.forEach((name, index) => {
+     const member = document.createElement('li');
+     member.textContent = index === 0 ? 'Holdkaptajn: ' + name : name;
+     list.append(member);
+    });
+    content.append(list);
+   }
+  } catch {
+   content.textContent = 'Medlemslisten kunne ikke hentes. Luk listen, og åbn den igen.';
+  } finally {
+   loading = false;
+  }
+ });
+ return details;
+}
+
 const showTeams = (message) => showEntries({
+ details: teamMembers,
  id: 'teams', rpc: 'admin_teams', empty: 'Der er endnu ingen tilmeldte hold.',
  label: team => displayTeamName(team.name) + ' · ' + team.points + ' point',
  action: 'Fjern hold',
